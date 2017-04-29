@@ -2,9 +2,12 @@ import scrapy
 from string import ascii_lowercase
 
 def get_urls():
-    #prefix = 'https://www.rottentomatoes.com/critics/authors?letter='
-    prefix = 'https://www.rottentomatoes.com/critics/legacy_authors?letter='
-    return [prefix + letter for letter in ascii_lowercase]
+    current = 'https://www.rottentomatoes.com/critics/authors?letter='
+    legacy = 'https://www.rottentomatoes.com/critics/legacy_authors?letter='
+    
+    current_paths = [current + letter for letter in ascii_lowercase]
+    legacy_paths = [legacy + letter for letter in ascii_lowercase]
+    return current_paths + legacy_paths
  
 class ReviewSpider(scrapy.Spider):
     name = 'critics'
@@ -16,7 +19,7 @@ class ReviewSpider(scrapy.Spider):
                                  callback=self.parse_reviews)
 
     def parse_reviews(self, response):
-        if response.url.split('/')[-1] == 'movies':
+        if 'movies' in response.url.split('/')[-1]:
             for row in response.css('tr'):
                 rating_elem = row.css('span.icon').extract()
                 movie_elem = row.css('a.movie-link::attr(href)').extract()
