@@ -1,4 +1,6 @@
-import os
+import os, sys
+sys.path.append(os.path.realpath('scrape_rotten/'))
+
 import json
 
 import scrapy

@@ -1,5 +1,6 @@
 import os
-if os.environ.get('PRODUCTION', 'FALSE') == 'TRUE:
+
+if os.environ.get('PRODUCTION', 'FALSE') == 'TRUE':
     db_config = {
         'dbname': os.environ['DBNAME'],
         'user': os.environ['PGUSER'],

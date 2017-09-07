@@ -1,20 +1,18 @@
-import os
+import os, sys
+sys.path.append(os.path.realpath('scrape_rotten/'))
+
 import json
 
-import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 import luigi
 import psycopg2
 
 from config import db_config
-from spiders import flixster_spider
 from scrape_movies import ScrapeMovies
 from scrape_reviews import ScrapeReviews
 from scrape_flixster import ScrapeFlixster
 
 
-class UploadToDB(luigi.Task):
+class CreateTempDBs(luigi.Task):
     batch_group = luigi.Parameter()
     output_dir = 'scraped_data'
     movies = 'movies.json'

@@ -20,22 +20,22 @@ class MovieSpider(scrapy.Spider):
         year = response.css("h1#movie-title").xpath('span/text()').extract() 
 
         if movie_url_handle:
-            data['movie_url_handle'] = movie_url_handle[-1]
+            data['url_handle'] = movie_url_handle[-1]
 
         if req_url_handle:
             data['req_url_handle'] = req_url_handle[-1]
 
         if poster_url:
-            data['poster_url'] = poster_url[0]
+            data['image_url'] = poster_url[0]
 
         if movie_title:
-            data['movie_title'] = movie_title[0]
+            data['title'] = movie_title[0]
 
         if description:
             data['description'] = description[0]
 
         if rotten_id:
-            data['rt_id'] = rotten_id[0]
+            data['rotten_id'] = rotten_id[0]
 
         if year:
             data['year'] = year[0].replace('(', '').replace(')', '').strip()
