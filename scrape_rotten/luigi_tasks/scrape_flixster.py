@@ -44,4 +44,4 @@ class ScrapeFlixster(luigi.Task):
         input_path = os.path.join(self.output_dir, self.batch_group, self.input_file)
         with open(input_path) as f:
             data = [json.loads(l.rstrip()) for l in f]
-            return [self.url.format(movie['rt_id']) for movie in data]
+            return [self.url.format(movie['rotten_id']) for movie in data]
