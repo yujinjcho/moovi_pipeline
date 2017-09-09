@@ -74,6 +74,8 @@ class TempReviewsUpload(luigi.postgres.CopyToTable):
 
     def load_reviews(self):
         with self.input().open() as f:
-            return [json.loads(l.rstrip()) for l in f]
+            for l in f:
+                yield json.loads(l.rstrip())
+
 
 

@@ -17,10 +17,10 @@ class ReviewsMappedToID(luigi.Task):
     def run(self):
         movies = self.load_movies(self.MOVIE_FNAME)
         reviews = self.load_reviews(self.REVIEWS_FNAME)
-        reviews_with_rotten_id = [
+        reviews_with_rotten_id = (
             add_rotten_id(review, movies) 
             for review in reviews
-        ]
+        )
         self.write_to_output(reviews_with_rotten_id)
 
     def requires(self):
@@ -38,11 +38,13 @@ class ReviewsMappedToID(luigi.Task):
     def load_reviews(self, filename):
         file_path = os.path.join(self.output_dir, self.batch_group, filename) 
         with open(file_path) as f:
-            return [json.loads(l.rstrip()) for l in f]
+            for l in f:
+                yield json.loads(l.rstrip())
 
     def write_to_output(self, data):
         with self.output().open('w') as f:
-            f.write('\n'.join([json.dumps(x) for x in data]))
+            for x in data:
+                f.write(json.dumps(x) + '\n')
 
     def output(self):
         output_path = os.path.join(self.output_dir, self.batch_group, self.output_name)

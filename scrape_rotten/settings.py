@@ -17,9 +17,13 @@ NEWSPIDER_MODULE = 'scrape_rotten.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scrape_rotten (+http://www.yourdomain.com)'
+USER_AGENT = 'movie_project (yujinjcho@gmail.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
+
+# LOG_LEVEL = 'WARNING'
+RETRY_TIMES=5
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32

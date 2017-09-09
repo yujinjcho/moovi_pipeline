@@ -1,8 +1,12 @@
 import os, sys
 sys.path.append(os.path.realpath('scrape_rotten/'))
 
+from twisted.internet import reactor
 import scrapy
 from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
+
 from scrapy.utils.project import get_project_settings
 
 from spiders import critic_spider
@@ -18,9 +22,7 @@ class ScrapeReviews(luigi.Task):
         settings = get_project_settings()
         settings.overrides['FEED_FORMAT'] = 'jl'
         settings.overrides['FEED_URI'] = os.path.join(self.output_dir, self.batch_group, self.output_name)
-
         process = CrawlerProcess(settings)
-
         process.crawl(critic_spider.ReviewSpider)
         process.start() 
 

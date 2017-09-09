@@ -3,8 +3,12 @@ sys.path.append(os.path.realpath('scrape_rotten/'))
 
 import json
 
+from twisted.internet import reactor
 import scrapy
 from scrapy.crawler import CrawlerProcess
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
+
 from scrapy.utils.project import get_project_settings
 
 from spiders import movie_spider
@@ -28,7 +32,6 @@ class ScrapeMovies(luigi.Task):
         settings = get_project_settings()
         settings.overrides['FEED_FORMAT'] = 'jl'
         settings.overrides['FEED_URI'] = os.path.join(self.output_dir, self.batch_group, self.output_name)
-
         process = CrawlerProcess(settings)
         process.crawl(movie_spider.MovieSpider, start_urls=movie_urls)
         process.start() 

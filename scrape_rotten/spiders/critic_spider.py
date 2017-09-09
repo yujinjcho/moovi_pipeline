@@ -7,11 +7,12 @@ def get_urls():
     
     current_paths = [current + letter for letter in ascii_lowercase]
     legacy_paths = [legacy + letter for letter in ascii_lowercase]
-    return current_paths + legacy_paths
+    return legacy_paths + current_paths
  
 class ReviewSpider(scrapy.Spider):
     name = 'critics'
     start_urls = get_urls()
+    # start_urls = ["https://www.rottentomatoes.com/critics/authors?letter=f"]
 
     def parse(self, response):
         for critic_href in response.xpath("//p[@class='critic-names']/a/@href").extract():

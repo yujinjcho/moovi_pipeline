@@ -1,4 +1,0 @@
-
-OUTPUT=$1
-
-scrapy crawl critics -o data/"$OUTPUT".jl
