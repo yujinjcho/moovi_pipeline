@@ -10,4 +10,4 @@ RUN apk update && \
 
 RUN pip --default-timeout=1000 install -r requirements.txt
 
-CMD ["sh", "run_luigi"]
+CMD ["sh", "scrape_all"]
