@@ -30,6 +30,7 @@ class UpdateDB(luigi.Task):
         movies_updated = update_movies(db)
         movies_inserted = insert_new_movies(db)
         ratings_inserted = insert_new_ratings(db)
+        drop_temp_tables(db)
         db.commit()
 
         update_stats = {
@@ -95,3 +96,11 @@ def insert_new_ratings(db):
         cur.execute(query)
         row_count = cur.rowcount
     return row_count
+
+def drop_temp_tables(db):
+    query = """
+        DROP TABLE temp_movies;
+        DROP TABLE temp_ratings;
+    """
+    with db.cursor() as cur:
+        cur.execute(query)
