@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BATCH_GROUP=$(date +%Y-%m-%d)
-cp -r data/scraped_data ./
+
 
 PYTHONPATH=. luigi \
   --module scrape_rotten.luigi_tasks.scrape_reviews ScrapeReviews  \
