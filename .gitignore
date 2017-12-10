@@ -1,3 +1,8 @@
 data/*
 *.pyc
 luigi_tasks/archive/
+scrape_rotten/build_image
+scrape_rotten/run_docker
+scrape_rotten/scrape.logs
+scrape_rotten/scraped_data
+scrape_rotten/test_luigi_run
