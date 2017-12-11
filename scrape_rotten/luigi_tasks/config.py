@@ -10,5 +10,18 @@ if os.environ.get('PRODUCTION', 'FALSE') == 'TRUE':
     }
 else:
     db_config = {
-        'dbname': 'movie_rec'
+        'dbname': 'movie_rec',
+        'user': 'postgres',
+        'password': None,
+        'host': os.environ.get('PGHOST', 'docker.for.mac.localhost')
     }
+
+output_dir = 'scraped_data'
+
+reviews_output = '01_reviews.jl'
+movies_output = '02_movies.jl'
+flixster_output = '03_flixster.jl'
+reviews_mapped_to_id_output = '04_reviews_to_movies.json'
+combined_movies_output = '05_combined_movies.json'
+update_db_output = '06_update_db.time'
+add_scrape_stats_output = '07_add_scrape_stats.time'

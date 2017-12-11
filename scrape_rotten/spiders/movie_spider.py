@@ -5,6 +5,13 @@ class MovieSpider(scrapy.Spider):
     name = 'movies'
     # start_urls = get_urls()
 
+    def __init__(self, *args, **kwargs):
+        urls = kwargs.pop('urls', []) 
+        if urls:
+            self.start_urls = urls.split(',')
+        self.logger.info(self.start_urls)
+        super(MovieSpider, self).__init__(*args, **kwargs)
+    
     def meta_property(self, response, prop):
         return response.xpath("//meta[@property='{}']/@content".format(prop)).extract()
 
