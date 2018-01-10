@@ -8,7 +8,7 @@ import luigi.postgres
 import config
 from config import db_config
 from upload_to_temp_db import TempMoviesUpload, TempReviewsUpload
-
+from update_stream import UpdateStream
 
 class UpdateDB(luigi.Task):
     batch_group = luigi.Parameter()
@@ -18,7 +18,8 @@ class UpdateDB(luigi.Task):
     def requires(self):
         return [
             TempMoviesUpload(self.batch_group),
-            TempReviewsUpload(self.batch_group)
+            TempReviewsUpload(self.batch_group),
+            UpdateStream(self.batch_group)
         ]
 
     def run(self):

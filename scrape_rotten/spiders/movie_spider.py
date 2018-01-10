@@ -14,6 +14,15 @@ class MovieSpider(scrapy.Spider):
     def meta_property(self, response, prop):
         return response.xpath("//meta[@property='{}']/@content".format(prop)).extract()
 
+    def parse_streaming(self, response):
+        streamers = ['itunes', 'netflix', 'amazoninstant']
+        return dict([
+            (streamer, self.streamer_available(streamer, response)) for streamer in streamers    
+        ])
+
+    def streamer_available(self, streamer, response):
+        return len(response.css('div.{}'.format(streamer))) > 0
+
     def parse(self, response):
         data = {'url': response.url}
 
@@ -24,6 +33,7 @@ class MovieSpider(scrapy.Spider):
         description = self.meta_property(response, 'og:description') 
         rotten_id = response.xpath("//meta[@name='movieID']/@content").extract()
         year = response.css("h1#movie-title").xpath('span/text()').extract() 
+        streaming = self.parse_streaming(response)
 
         if movie_url_handle:
             data['url_handle'] = movie_url_handle[-1]
@@ -45,6 +55,8 @@ class MovieSpider(scrapy.Spider):
 
         if year:
             data['year'] = year[0].replace('(', '').replace(')', '').strip()
+
+        data.update(streaming)
 
         yield data
 
