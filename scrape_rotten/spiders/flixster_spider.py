@@ -6,9 +6,9 @@ class FlixsterSpider(scrapy.Spider):
     default_image = 'http://legacy-static.flixster.com/static/images/movie.none.large.flx.jpg'
 
     def __init__(self, *args, **kwargs):
-        urls = kwargs.pop('urls', []) 
-        if urls:
-            self.start_urls = urls.split(',')
+        urls_path = kwargs.pop('urls_path', None)
+        if urls_path:
+            self.start_urls = self.load_start_urls(urls_path)
         self.logger.info(self.start_urls)
         super(FlixsterSpider, self).__init__(*args, **kwargs)
 
@@ -25,4 +25,6 @@ class FlixsterSpider(scrapy.Spider):
 
         yield data
 
-
+    def load_start_urls(self, input_path):
+        with open(input_path) as f:
+            return [l.rstrip() for l in f]

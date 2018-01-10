@@ -3,15 +3,14 @@ import scrapy
  
 class MovieSpider(scrapy.Spider):
     name = 'movies'
-    # start_urls = get_urls()
 
     def __init__(self, *args, **kwargs):
-        urls = kwargs.pop('urls', []) 
-        if urls:
-            self.start_urls = urls.split(',')
+        urls_path = kwargs.pop('urls_path', None)
+        if urls_path:
+            self.start_urls = self.load_start_urls(urls_path)
         self.logger.info(self.start_urls)
         super(MovieSpider, self).__init__(*args, **kwargs)
-    
+
     def meta_property(self, response, prop):
         return response.xpath("//meta[@property='{}']/@content".format(prop)).extract()
 
@@ -49,4 +48,6 @@ class MovieSpider(scrapy.Spider):
 
         yield data
 
-
+    def load_start_urls(self, input_path):
+        with open(input_path) as f:
+            return [l.rstrip() for l in f]

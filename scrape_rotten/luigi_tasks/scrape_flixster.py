@@ -21,8 +21,8 @@ class ScrapeFlixster(luigi.Task):
     def run(self):
         flixster_urls = self.load_urls()
         output_path = os.path.join(self.output_dir, self.batch_group, self.output_name)
-        exit_code = run_spider(output_path, 'flixster', flixster_urls)
-        self.write_output(exit_code)
+        run_spider(output_path, 'flixster', flixster_urls)
+        self.write_output()
 
     def output(self):
         target_filename = os.path.splitext(self.output_name)[0] + '.time'
@@ -35,7 +35,6 @@ class ScrapeFlixster(luigi.Task):
             data = [json.loads(l.rstrip()) for l in f]
             return [self.url.format(movie['rotten_id']) for movie in data]
 
-    def write_output(self, exit_code):
-        if exit_code == 0:
-            with self.output().open('w') as f:
-                f.write('done')
+    def write_output(self):
+        with self.output().open('w') as f:
+            f.write('done')

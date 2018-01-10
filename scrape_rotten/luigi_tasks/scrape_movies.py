@@ -21,8 +21,8 @@ class ScrapeMovies(luigi.Task):
     def run(self):
         movie_urls = self.load_movie_urls()
         output_path = os.path.join(self.output_dir, self.batch_group, self.output_name)
-        exit_code = run_spider(output_path, 'movies', movie_urls)
-        self.write_output(exit_code)
+        run_spider(output_path, 'movies', movie_urls)
+        self.write_output()
 
     def output(self):
         target_filename = os.path.splitext(self.output_name)[0] + '.time'
@@ -36,7 +36,6 @@ class ScrapeMovies(luigi.Task):
         movie_uniq = list(set(movie_urls))
         return [self.url.format(x) for x in movie_uniq]
 
-    def write_output(self, exit_code):
-        if exit_code == 0:
-            with self.output().open('w') as f:
-                f.write('done')
+    def write_output(self):
+        with self.output().open('w') as f:
+            f.write('done')

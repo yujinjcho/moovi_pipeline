@@ -1,6 +1,6 @@
 import os
 
-if os.environ.get('PRODUCTION', 'FALSE') == 'TRUE':
+if os.environ.get('PRODUCTION') == 'TRUE':
     db_config = {
         'dbname': os.environ['DBNAME'],
         'user': os.environ['PGUSER'],
@@ -13,7 +13,7 @@ else:
         'dbname': 'movie_rec',
         'user': 'postgres',
         'password': None,
-        'host': os.environ.get('PGHOST', 'docker.for.mac.localhost')
+        'host': 'docker.for.mac.localhost'
     }
 
 output_dir = 'scraped_data'
