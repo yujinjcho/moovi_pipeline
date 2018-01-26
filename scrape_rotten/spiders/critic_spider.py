@@ -1,18 +1,23 @@
+import os
 import scrapy
 from string import ascii_lowercase
 
 def get_urls():
-    current = 'https://www.rottentomatoes.com/critics/authors?letter='
-    legacy = 'https://www.rottentomatoes.com/critics/legacy_authors?letter='
-    
-    current_paths = [current + letter for letter in ascii_lowercase]
-    legacy_paths = [legacy + letter for letter in ascii_lowercase]
-    return legacy_paths + current_paths
+    if os.environ.get('PRODUCTION', 'FALSE') == 'TRUE':
+        current = 'https://www.rottentomatoes.com/critics/authors?letter='
+        legacy = 'https://www.rottentomatoes.com/critics/legacy_authors?letter='
+        
+        current_paths = [current + letter for letter in ascii_lowercase]
+        legacy_paths = [legacy + letter for letter in ascii_lowercase]
+        urls = legacy_paths + current_paths
+    else:
+        urls = ["https://www.rottentomatoes.com/critics/authors?letter=q"]
+
+    return urls
  
 class ReviewSpider(scrapy.Spider):
-    name = 'critics'
+    name = 'reviews'
     start_urls = get_urls()
-    # start_urls = ["https://www.rottentomatoes.com/critics/authors?letter=f"]
 
     def parse(self, response):
         for critic_href in response.xpath("//p[@class='critic-names']/a/@href").extract():

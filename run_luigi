@@ -1,0 +1,6 @@
+#!/bin/bash
+
+PYTHONPATH=. luigi \
+  --module $MODULE $TASK \
+  --batch-group $BATCH_GROUP \
+  --local-scheduler

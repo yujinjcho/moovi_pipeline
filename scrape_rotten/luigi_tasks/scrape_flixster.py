@@ -1,22 +1,18 @@
-import os, sys
-sys.path.append(os.path.realpath('scrape_rotten/'))
-
+import os
+import sys
+import subprocess
 import json
-
-import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
-
-from spiders import flixster_spider
-from scrape_movies import ScrapeMovies
-
 import luigi
+
+import config
+from run_crawl_util import run_spider
+from scrape_movies import ScrapeMovies
 
 class ScrapeFlixster(luigi.Task):
     batch_group = luigi.Parameter()
-    output_dir = 'scraped_data'
-    input_file = 'movies.json'
-    output_name = 'flixster.json'
+    output_dir = config.output_dir
+    input_file = config.movies_output
+    output_name = config.flixster_output
     url = "https://www.flixster.com/movie/{}"
     
     def requires(self):
@@ -24,20 +20,13 @@ class ScrapeFlixster(luigi.Task):
 
     def run(self):
         flixster_urls = self.load_urls()
-
-        settings = get_project_settings()
-        settings.overrides['FEED_FORMAT'] = 'jl'
-        settings.overrides['FEED_URI'] = os.path.join(self.output_dir, self.batch_group, self.output_name)
-
-        process = CrawlerProcess(settings)
-        process.crawl(flixster_spider.FlixsterSpider, start_urls=flixster_urls)
-        process.start() 
-
-        with self.output().open('w') as f:
-            f.write('done')
+        output_path = os.path.join(self.output_dir, self.batch_group, self.output_name)
+        run_spider(output_path, 'flixster', flixster_urls)
+        self.write_output()
 
     def output(self):
-        output_path = os.path.join(self.output_dir, self.batch_group, '03_flixster.time')
+        target_filename = os.path.splitext(self.output_name)[0] + '.time'
+        output_path = os.path.join(self.output_dir, self.batch_group, target_filename)
         return luigi.LocalTarget(output_path)
 
     def load_urls(self):
@@ -45,3 +34,7 @@ class ScrapeFlixster(luigi.Task):
         with open(input_path) as f:
             data = [json.loads(l.rstrip()) for l in f]
             return [self.url.format(movie['rotten_id']) for movie in data]
+
+    def write_output(self):
+        with self.output().open('w') as f:
+            f.write('done')

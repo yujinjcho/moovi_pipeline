@@ -1,22 +1,22 @@
-import os, sys
-sys.path.append(os.path.realpath('scrape_rotten/'))
-
+import os
+import sys
 import json
 import luigi
 
+import config
 from scrape_movies import ScrapeMovies
 from scrape_flixster import ScrapeFlixster
 
 class CombineMovies(luigi.Task):
     batch_group = luigi.Parameter()
-    output_dir = 'scraped_data'
-    output_name = 'movies_flixster_images.json'
-    MOVIE_FNAME = 'movies.json'
-    FLIXSTER_FNAME = 'flixster.json'
+    output_dir = config.output_dir
+    output_name = config.combined_movies_output
+    movie_filename = config.movies_output
+    flixster_filename = config.flixster_output
    
-    def  run(self):
-        movies = self.load_movies(self.MOVIE_FNAME)
-        flixster_images = self.load_flixster(self.FLIXSTER_FNAME)
+    def run(self):
+        movies = self.load_movies(self.movie_filename)
+        flixster_images = self.load_flixster(self.flixster_filename)
         movies_new_image_url = [
             add_flixster_url(movie, flixster_images) 
             for movie in movies
@@ -34,13 +34,11 @@ class CombineMovies(luigi.Task):
         with open(file_path) as f:
             data = [json.loads(l.rstrip()) for l in f]
 
-        # remove duplicate ids
         seen_movies = set()
         for movie in data:
             if movie['rotten_id'] not in seen_movies:
                 yield movie
                 seen_movies.add(movie['rotten_id'])
-
 
     def load_flixster(self, filename):
         file_path = os.path.join(self.output_dir, self.batch_group, filename) 

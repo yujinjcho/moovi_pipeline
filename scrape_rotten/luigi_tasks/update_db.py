@@ -1,28 +1,25 @@
-import os, sys
-sys.path.append(os.path.realpath('scrape_rotten/'))
-
+import os
+import sys
 import json
 import psycopg2
 import luigi
 import luigi.postgres
 
+import config
 from config import db_config
-
 from upload_to_temp_db import TempMoviesUpload, TempReviewsUpload
-
-HOST = db_config.get('host', "localhost")
-DATABASE = db_config.get('dbname', "movie_rec") 
-USER = db_config.get('user', "postgres")
-PASSWORD = db_config.get('password', None)
+from update_stream import UpdateStream
 
 class UpdateDB(luigi.Task):
     batch_group = luigi.Parameter()
-    output_dir = 'scraped_data'
+    output_dir = config.output_dir
+    output_file = config.update_db_output
 
     def requires(self):
         return [
             TempMoviesUpload(self.batch_group),
-            TempReviewsUpload(self.batch_group)
+            TempReviewsUpload(self.batch_group),
+            UpdateStream(self.batch_group)
         ]
 
     def run(self):
@@ -42,7 +39,7 @@ class UpdateDB(luigi.Task):
             f.write(json.dumps(update_stats))
 
     def output(self):
-        output_path = os.path.join(self.output_dir, self.batch_group, '05_update_tables.time') 
+        output_path = os.path.join(self.output_dir, self.batch_group, self.output_file) 
         return luigi.LocalTarget(output_path) 
 
 

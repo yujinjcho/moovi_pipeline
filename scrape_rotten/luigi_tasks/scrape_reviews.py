@@ -1,36 +1,27 @@
-import os, sys
-sys.path.append(os.path.realpath('scrape_rotten/'))
-
-from twisted.internet import reactor
-import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.crawler import CrawlerRunner
-from scrapy.utils.log import configure_logging
-
-from scrapy.utils.project import get_project_settings
-
-from spiders import critic_spider
-
+import os
+import sys
 import luigi
+
+import config
+from run_crawl_util import run_spider
+
 
 class ScrapeReviews(luigi.Task):
     batch_group = luigi.Parameter()
-    output_dir = 'scraped_data'
-    output_name = 'reviews.json'
+    output_dir = config.output_dir
+    output_name = config.reviews_output
     
     def run(self):
-        settings = get_project_settings()
-        settings.overrides['FEED_FORMAT'] = 'jl'
-        settings.overrides['FEED_URI'] = os.path.join(self.output_dir, self.batch_group, self.output_name)
-        process = CrawlerProcess(settings)
-        process.crawl(critic_spider.ReviewSpider)
-        process.start() 
-
-        with self.output().open('w') as f:
-            f.write('done')
+        output_path = os.path.join(self.output_dir, self.batch_group, self.output_name)
+        exit_code = run_spider(output_path, 'reviews')
+        self.write_output(exit_code)
 
     def output(self):
-        output_path = os.path.join(self.output_dir, self.batch_group, '01_critic_review.time')
+        target_filename = os.path.splitext(self.output_name)[0] + '.time'
+        output_path = os.path.join(self.output_dir, self.batch_group, target_filename)
         return luigi.LocalTarget(output_path)
 
-
+    def write_output(self, exit_code):
+        if exit_code == 0:
+            with self.output().open('w') as f:
+                f.write('done')

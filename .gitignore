@@ -6,3 +6,5 @@ scrape_rotten/run_docker
 scrape_rotten/scrape.logs
 scrape_rotten/scraped_data
 scrape_rotten/test_luigi_run
+run_docker
+.DS_Store

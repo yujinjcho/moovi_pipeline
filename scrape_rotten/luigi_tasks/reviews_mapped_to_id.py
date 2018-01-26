@@ -1,22 +1,23 @@
-import os, sys
-sys.path.append(os.path.realpath('scrape_rotten/'))
-
+import os
+import sys
 import json
 import luigi
 
+import config
 from scrape_movies import ScrapeMovies
 from scrape_reviews import ScrapeReviews
 
+
 class ReviewsMappedToID(luigi.Task):
     batch_group = luigi.Parameter()
-    output_name = 'reviews_with_id.json'
-    output_dir = 'scraped_data'
-    MOVIE_FNAME = 'movies.json'
-    REVIEWS_FNAME = 'reviews.json'
+    output_dir = config.output_dir
+    reviews_file = config.reviews_output
+    movies_file = config.movies_output 
+    output_name = config.reviews_mapped_to_id_output 
    
     def run(self):
-        movies = self.load_movies(self.MOVIE_FNAME)
-        reviews = self.load_reviews(self.REVIEWS_FNAME)
+        movies = self.load_movies(self.movies_file)
+        reviews = self.load_reviews(self.reviews_file)
         reviews_with_rotten_id = (
             add_rotten_id(review, movies) 
             for review in reviews
@@ -25,8 +26,8 @@ class ReviewsMappedToID(luigi.Task):
 
     def requires(self):
         return {
-            'movies': ScrapeMovies(self.batch_group),
-            'reviews': ScrapeReviews(self.batch_group)
+            'movies': ScrapeMovies(batch_group = self.batch_group),
+            'reviews': ScrapeReviews(batch_group = self.batch_group),
         }
 
     def load_movies(self, filename):
@@ -59,6 +60,3 @@ def add_rotten_id(review, movies):
     review['rotten_id'] = rotten_id 
     review['user_id'] = review['critic']
     return review
-
-
-

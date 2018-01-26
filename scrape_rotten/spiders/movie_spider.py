@@ -3,10 +3,37 @@ import scrapy
  
 class MovieSpider(scrapy.Spider):
     name = 'movies'
-    # start_urls = get_urls()
+
+    def __init__(self, *args, **kwargs):
+        urls_path = kwargs.pop('urls_path', None)
+        if urls_path:
+            self.start_urls = self.load_start_urls(urls_path)
+        self.logger.info(self.start_urls)
+        super(MovieSpider, self).__init__(*args, **kwargs)
 
     def meta_property(self, response, prop):
         return response.xpath("//meta[@property='{}']/@content".format(prop)).extract()
+
+    def parse_streaming(self, response):
+        streamers = ['itunes', 'netflix', 'amazoninstant']
+        return dict([
+            (streamer, self.streamer_available(streamer, response)) for streamer in streamers    
+        ])
+
+    def parse_streaming_links(self, response):
+        stream_links = {}
+        streaming_urls = response.css("div.movie_links").css('a::attr(href)').extract()
+        for link in streaming_urls:
+            if 'amazon.com/gp/video/primesignup' in link:
+                stream_links['amazoninstant'] = link
+            elif 'itunes.apple.com' in link:
+                stream_links['itunes'] = link
+            elif 'netflix.com' in link:
+                stream_links['netflix'] = link
+        return stream_links
+
+    def streamer_available(self, streamer, response):
+        return len(response.css('div.{}'.format(streamer))) > 0
 
     def parse(self, response):
         data = {'url': response.url}
@@ -18,6 +45,8 @@ class MovieSpider(scrapy.Spider):
         description = self.meta_property(response, 'og:description') 
         rotten_id = response.xpath("//meta[@name='movieID']/@content").extract()
         year = response.css("h1#movie-title").xpath('span/text()').extract() 
+        streaming = self.parse_streaming(response)
+        stream_links = self.parse_streaming_links(response)
 
         if movie_url_handle:
             data['url_handle'] = movie_url_handle[-1]
@@ -40,6 +69,13 @@ class MovieSpider(scrapy.Spider):
         if year:
             data['year'] = year[0].replace('(', '').replace(')', '').strip()
 
+        data.update(streaming)
+
+        if len(stream_links) > 0:
+            data['stream_links'] = stream_links
+
         yield data
 
-
+    def load_start_urls(self, input_path):
+        with open(input_path) as f:
+            return [l.rstrip() for l in f]

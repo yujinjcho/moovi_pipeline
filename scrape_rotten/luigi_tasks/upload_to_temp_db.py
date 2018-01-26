@@ -1,30 +1,23 @@
-import os, sys
-sys.path.append(os.path.realpath('scrape_rotten/'))
-
+import os
+import sys
 import json
 import luigi
 import luigi.postgres
 
+import config
 from config import db_config
-
 from create_temp_dbs import CreateTempDBs
 from combine_movies import CombineMovies
 from reviews_mapped_to_id import ReviewsMappedToID
 
-OUTPUT_DIR = 'scraped_data'
-
-HOST = db_config.get('host', "localhost")
-DATABASE = db_config.get('dbname', "movie_rec") 
-USER = db_config.get('user', "postgres")
-PASSWORD = db_config.get('password', None)
 
 class TempMoviesUpload(luigi.postgres.CopyToTable):
     batch_group = luigi.Parameter()
-    output_dir = OUTPUT_DIR
-    host = HOST
-    database = DATABASE
-    user = USER
-    password = PASSWORD
+    output_dir = config.output_dir
+    host = db_config.get('host')
+    database = db_config.get('dbname')
+    user = db_config.get('user')
+    password = db_config.get('password')
 
     table = 'temp_movies'
     columns =  [
@@ -50,11 +43,11 @@ class TempMoviesUpload(luigi.postgres.CopyToTable):
 
 class TempReviewsUpload(luigi.postgres.CopyToTable):
     batch_group = luigi.Parameter()
-    output_dir = OUTPUT_DIR
-    host = HOST
-    database = DATABASE
-    user = USER
-    password = PASSWORD
+    output_dir = config.output_dir
+    host = db_config.get('host')
+    database = db_config.get('dbname')
+    user = db_config.get('user')
+    password = db_config.get('password')
 
     table = 'temp_ratings'
     columns =  [
@@ -76,6 +69,3 @@ class TempReviewsUpload(luigi.postgres.CopyToTable):
         with self.input().open() as f:
             for l in f:
                 yield json.loads(l.rstrip())
-
-
-
