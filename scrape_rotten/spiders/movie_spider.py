@@ -20,6 +20,18 @@ class MovieSpider(scrapy.Spider):
             (streamer, self.streamer_available(streamer, response)) for streamer in streamers    
         ])
 
+    def parse_streaming_links(self, response):
+        stream_links = {}
+        streaming_urls = response.css("div.movie_links").css('a::attr(href)').extract()
+        for link in streaming_urls:
+            if 'amazon.com/gp/video/primesignup' in link:
+                stream_links['amazoninstant'] = link
+            elif 'itunes.apple.com' in link:
+                stream_links['itunes'] = link
+            elif 'netflix.com' in link:
+                stream_links['netflix'] = link
+        return stream_links
+
     def streamer_available(self, streamer, response):
         return len(response.css('div.{}'.format(streamer))) > 0
 
@@ -34,6 +46,7 @@ class MovieSpider(scrapy.Spider):
         rotten_id = response.xpath("//meta[@name='movieID']/@content").extract()
         year = response.css("h1#movie-title").xpath('span/text()').extract() 
         streaming = self.parse_streaming(response)
+        stream_links = self.parse_streaming_links(response)
 
         if movie_url_handle:
             data['url_handle'] = movie_url_handle[-1]
@@ -57,6 +70,9 @@ class MovieSpider(scrapy.Spider):
             data['year'] = year[0].replace('(', '').replace(')', '').strip()
 
         data.update(streaming)
+
+        if len(stream_links) > 0:
+            data['stream_links'] = stream_links
 
         yield data
 

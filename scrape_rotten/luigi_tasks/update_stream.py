@@ -1,8 +1,11 @@
 import os
 import sys
 import json
+import random
+import time
 import luigi
 import psycopg2
+import requests
 from psycopg2.extras import execute_values
 
 import config
@@ -14,12 +17,11 @@ class UpdateStream(luigi.Task):
     output_dir = config.output_dir
     output_name = config.update_stream_output
     movie_filename = config.movies_output
+    invalid_movies = []
 
     def run(self):
         movies = self.load_movies(self.movie_filename)
         stream_movies = self.filter_stream_movies(movies)
-        # print("stream movies length")
-        # print(stream_movies)
         self.store_in_db(stream_movies)
         self.write_to_output()
 
@@ -36,11 +38,57 @@ class UpdateStream(luigi.Task):
             return [json.loads(l.rstrip()) for l in f]
 
     def filter_stream_movies(self, movies):
-        streamers = ['netflix', 'itunes', 'amazoninstant']
-        return dict([
-            (streamer, self.filter_streamer(movies, streamer))
-            for streamer in streamers
-        ])
+        netflix_movies = []
+        itune_movies = []
+        amazon_prime_movies = []
+
+
+        print(len(movies))
+        for i, movie in enumerate(movies):
+            print("processing - {}".format(i))
+            movie_id = movie['rotten_id']
+
+            if movie['itunes']:
+                itune_movies.append(movie_id)
+
+            if movie['amazoninstant']:
+                amazon_prime_movies.append(movie_id)
+
+            if movie['netflix']:
+            # if movie['netflix'] and self.validate_netflix(movie):
+                netflix_movies.append(movie_id)
+
+        return {
+            'netflix': netflix_movies,
+            'amazoninstant': amazon_prime_movies,
+            'itunes': itune_movies
+        }
+
+    # TODO: Not working yet
+    # def validate_netflix(self, movie):
+    #     if 'netflix' in movie['stream_links']:
+    #         url = movie['stream_links']['netflix']
+
+    #         if 'api.netflix.com' in url:
+    #             url_components = url.split('/')
+    #             netflix_id = url_components[-1]
+
+    #             netflix_url_base = "https://www.netflix.com/title/{}"
+    #             url = netflix_url_base.format(netflix_id)
+
+    #         print("validating - {}".format(url))
+    #         time.sleep(4)
+
+    #         res = requests.get(url)
+    #         if res.ok:
+    #             print("netflix is valid")
+    #             return True
+    #         else:
+    #             self.invalid_movies.append(movie['rotten_id'])
+    #             print("invalid movies - {}".format(len(self.invalid_movies)))
+
+    #     return False
+
 
     def store_in_db(self, stream_movies):
         conn =  psycopg2.connect(**config.db_config)
@@ -50,12 +98,6 @@ class UpdateStream(luigi.Task):
 
         conn.commit()
         conn.close()
-
-    def filter_streamer(self, movies, streamer):
-        return [
-            movie['rotten_id'] for movie in movies 
-            if movie[streamer]
-        ]
 
     def clear_streaming_table(self, cur):
         query = "truncate streaming_movies;"
@@ -75,4 +117,4 @@ class UpdateStream(luigi.Task):
 
     def write_to_output(self):
         with self.output().open('w') as f:
-            f.write('done')
+            f.write('\n'.join(self.invalid_movies))
